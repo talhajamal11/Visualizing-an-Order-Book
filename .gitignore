@@ -4,4 +4,5 @@
 # Ignore the data directories with large files
 src/data/level_1_5_10
 src/data/level_30_50
-
+src/data/lobster
+src/data/nasdaq
