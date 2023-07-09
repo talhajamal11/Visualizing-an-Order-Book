@@ -39,3 +39,4 @@ messages_types = pd.read_excel(
 ).sort_values('id').drop('id', axis=1)
 
 print(messages_types)
+
