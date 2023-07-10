@@ -6,7 +6,13 @@ This file downloads order book data and reconstructs the order book for data vis
 
 import os
 import gzip
+import shutil
+import dload 
+import requests
 from urllib.request import urlretrieve
+from zipfile import ZipFile
+
+import requests, zipfile, io
 
 
 
@@ -33,29 +39,52 @@ def download_nasdaq_data(directory:str, url:str, filename:str) -> None:
 
     return None
 
-def download_lobster_data(directory:str, url:str, folderList:list):
+def download_lobster_data(url:str, directory:str, folderList:list) -> None:
     """ 
     Download data
+    Sample Link to download file:
+    # https://lobsterdata.com/info/sample/LOBSTER_SampleFile_AMZN_2012-06-21_5.zip
     """
+
+    # If Directory is not present, Create Directory
     if os.path.exists(directory) == False:
         print("Creating directory to download and save Lobster Data to")
         os.mkdir(directory)
     else:
         print("Directory for Lobster Data exists")
     
+    # Iterate over list of Folder Names
     for folder in folderList:
-        _directory = directory + str(folder) + str("/")
-        print(_directory)
+        # Explicitly Change directory to save files in this location
         os.chdir(directory)
-        if os.path.exists(_directory) == False:
-            print("Download...", url)
-            urlretrieve(url, folder)
+
+        _zippedFolderPath= directory + str(folder)
+        print("Zipped Path: ", _zippedFolderPath)
+        _unzippedFolderPath = _zippedFolderPath.removesuffix(".zip")
+        print("Unzipped Path: ", _unzippedFolderPath)
+        _url = url + str(folder)
+        print(_url)
+
+        # If Unzipped Folders are not present, check if Zipped Folders are present
+        if not os.path.exists(_unzippedFolderPath):
+            # If Zipped Folders are not present, download Zipped Folders and Unzip them
+            if not os.path.exists(_zippedFolderPath):
+                print("Zipped Folder not present, Downloading Zipped Folder...", url)
+                urlretrieve(_url, filename=folder)
+                print("Unzipping Folder: ", folder)
+                with ZipFile(_zippedFolderPath, 'r') as zip:
+                    os.mkdir(_unzippedFolderPath)
+                    zip.extractall(path=_unzippedFolderPath)
+            elif os.path.exists(_zippedFolderPath):
+                print("Zipped Folders present, Unzipping File: ", folder)
+                with ZipFile(_zippedFolderPath) as zip:
+                    os.mkdir(_unzippedFolderPath)
+                    zip.extractall(path=_unzippedFolderPath)
+                
         else:
-            print("The Folder Exists")
+            print("The Unzipped Folders already exists")
 
     return None
-
-# https://lobsterdata.com/info/sample/LOBSTER_SampleFile_AMZN_2012-06-21_5.zip
 
 if __name__=='__main__':
 
@@ -77,7 +106,7 @@ if __name__=='__main__':
                      "LOBSTER_SampleFile_AAPL_2012-06-21_10.zip",
                      "LOBSTER_SampleFile_GOOG_2012-06-21_1.zip",
                      "LOBSTER_SampleFile_GOOG_2012-06-21_5.zip",
-                     "LOBSTER_SampleFile_GOOG_2012-06-21_10.zip"
+                     "LOBSTER_SampleFile_GOOG_2012-06-21_10.zip",
                      "LOBSTER_SampleFile_INTC_2012-06-21_1.zip",
                      "LOBSTER_SampleFile_INTC_2012-06-21_5.zip",
                      "LOBSTER_SampleFile_INTC_2012-06-21_10.zip",
@@ -85,8 +114,8 @@ if __name__=='__main__':
                      "LOBSTER_SampleFile_MSFT_2012-06-21_10.zip",
                      "LOBSTER_SampleFile_MSFT_2012-06-21_10.zip"
                      ]
-    
-    download_lobster_data(lobster_data_path, lobster_url, lobster_folders)
+
+    download_lobster_data(lobster_url, lobster_data_path, lobster_folders)
 
     
     
