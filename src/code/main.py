@@ -5,40 +5,10 @@ This file downloads order book data and reconstructs the order book for data vis
 # Import relevant modules
 
 import os
-import gzip
-import shutil
-import dload 
-import requests
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
-import requests, zipfile, io
-
-
-
-# Functions to download data
-
-def download_nasdaq_data(directory:str, url:str, filename:str) -> None:
-    """ 
-    Download data
-    """
-    if os.path.exists(directory) == False:
-        print("Creating directory to download and save Nasdaq Data to")
-        os.mkdir(directory)
-    else:
-        print("Directory for Nasdaq Data exists")
-    
-    directory = directory + str(filename) + str("/")
-    print(directory)
-
-    if os.path.exists(directory) == False:
-        print("Download...", url)
-        urlretrieve(url, filename)
-    else:
-        print("The File Exists")
-
-    return None
-
+# Functions to download data, unzip, and delete zipped files
 def download_lobster_data(url:str, directory:str, folderList:list) -> None:
     """ 
     Download data
@@ -59,32 +29,49 @@ def download_lobster_data(url:str, directory:str, folderList:list) -> None:
         os.chdir(directory)
 
         _zippedFolderPath= directory + str(folder)
-        print("Zipped Path: ", _zippedFolderPath)
+        #print("Zipped Path: ", _zippedFolderPath)
         _unzippedFolderPath = _zippedFolderPath.removesuffix(".zip")
-        print("Unzipped Path: ", _unzippedFolderPath)
+        #print("Unzipped Path: ", _unzippedFolderPath)
         _url = url + str(folder)
-        print(_url)
+        #print(_url)
+        _unzippedFolder = folder.removesuffix(".zip")
 
-        # If Unzipped Folders are not present, check if Zipped Folders are present
-        if not os.path.exists(_unzippedFolderPath):
-            # If Zipped Folders are not present, download Zipped Folders and Unzip them
-            if not os.path.exists(_zippedFolderPath):
-                print("Zipped Folder not present, Downloading Zipped Folder...", url)
-                urlretrieve(_url, filename=folder)
-                print("Unzipping Folder: ", folder)
-                with ZipFile(_zippedFolderPath, 'r') as zip:
-                    os.mkdir(_unzippedFolderPath)
-                    zip.extractall(path=_unzippedFolderPath)
-            elif os.path.exists(_zippedFolderPath):
-                print("Zipped Folders present, Unzipping File: ", folder)
-                with ZipFile(_zippedFolderPath) as zip:
-                    os.mkdir(_unzippedFolderPath)
-                    zip.extractall(path=_unzippedFolderPath)
-                
+        # If Zipped or Unzipped Folders are not present, download zip folders and unzip them
+        if (not os.path.exists(_unzippedFolderPath)) and (not os.path.exists(_zippedFolderPath)):
+            print("Zipped Folder not present, Downloading Zipped Folder...", _url)
+            urlretrieve(_url, filename=folder)
+            print("Unzipping Folder: ", folder)
+            with ZipFile(_zippedFolderPath, 'r') as zip:
+                os.mkdir(_unzippedFolderPath)
+                zip.extractall(path=_unzippedFolderPath)
+            # Delete Zipped Folder after Unzipping
+            os.remove(_zippedFolderPath)
+
+        # If Unzipped Folders and Zipped Folders exist, delete zipped folders
+        elif (os.path.exists(_zippedFolderPath)) and (os.path.exists(_unzippedFolderPath)):
+            os.remove(_zippedFolderPath)
+
+        # If Zipped Folders Exist, Unzip them
+        elif (os.path.exists(_zippedFolderPath) and (not os.path.exists(_unzippedFolder))):
+            print("Zipped Folders present, Unzipping File: ", folder)
+            with ZipFile(_zippedFolderPath) as zip:
+                os.mkdir(_unzippedFolderPath)
+                zip.extractall(path=_unzippedFolderPath)
+            os.remove(_zippedFolderPath)
         else:
-            print("The Unzipped Folders already exists")
+            print("The Unzipped Folder {} already exists".format(_unzippedFolder))
 
     return None
+
+# Function to rename all folders in both level directories
+def renameFolders(dir:str) -> None:
+    os.chdir(dir)
+    folders = [f for f in os.listdir(dir) if not f.startswith('.')]
+    for folder in folders:
+        os.rename(folder, folder.removeprefix("LOBSTER_SampleFile_"))
+    return None
+
+
 
 if __name__=='__main__':
 
@@ -111,11 +98,21 @@ if __name__=='__main__':
                      "LOBSTER_SampleFile_INTC_2012-06-21_5.zip",
                      "LOBSTER_SampleFile_INTC_2012-06-21_10.zip",
                      "LOBSTER_SampleFile_MSFT_2012-06-21_1.zip",
+                     "LOBSTER_SampleFile_MSFT_2012-06-21_5.zip",
                      "LOBSTER_SampleFile_MSFT_2012-06-21_10.zip",
-                     "LOBSTER_SampleFile_MSFT_2012-06-21_10.zip"
+                     "LOBSTER_SampleFile_AAPL_2012-06-21_30.zip",
+                     "LOBSTER_SampleFile_AAPL_2012-06-21_50.zip",
+                     "LOBSTER_SampleFile_MSFT_2012-06-21_30.zip",
+                     "LOBSTER_SampleFile_MSFT_2012-06-21_50.zip",
+                     "LOBSTER_SampleFile_SPY_2012-06-21_30.zip",
+                     "LOBSTER_SampleFile_SPY_2012-06-21_50.zip"
                      ]
 
+    # Download, Unzip and Delete Zip Files
     download_lobster_data(lobster_url, lobster_data_path, lobster_folders)
 
-    
-    
+    directory = "/Users/talhajamal/Documents/Coding Practice/Python Projects/Visualizing-an-Order-Book/src/data/lobster/"
+    # Specify hidden files to be ignored
+    upper_directory = [f for f in os.listdir(directory) if not f.startswith('.')]
+    #for d in upper_directory:
+    #    renameFolders(directory+"/"+d)
