@@ -112,7 +112,8 @@ if __name__=='__main__':
     download_lobster_data(lobster_url, lobster_data_path, lobster_folders)
 
     directory = "/Users/talhajamal/Documents/Coding Practice/Python Projects/Visualizing-an-Order-Book/src/data/lobster/"
+    renameFolders(directory)
+    
     # Specify hidden files to be ignored
-    upper_directory = [f for f in os.listdir(directory) if not f.startswith('.')]
-    #for d in upper_directory:
-    #    renameFolders(directory+"/"+d)
+    #pper_directory = [f for f in os.listdir(directory) if not f.startswith('.')]
+        
