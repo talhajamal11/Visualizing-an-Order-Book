@@ -31,11 +31,11 @@ def download_lobster_data(url:str, directory:str, folderList:list) -> None:
         _zippedFolderPath= directory + str(folder)
         _unzippedFolderPath = _zippedFolderPath.removesuffix(".zip")
         _url = url + str(folder)
-        _unzippedFolder = folder.removeprefix("LOBSTER_SampleFile_").removesuffix(".zip")
+        _renamedFolder = folder.removeprefix("LOBSTER_SampleFile_").removesuffix(".zip")
 
         # If renamed Folders exist, exit loop
-        if os.path.exists(_unzippedFolder):
-            print("Renamed Folder {} already exist...".format(_unzippedFolder))
+        if os.path.exists(_renamedFolder):
+            print("Renamed Folder {} already exist...".format(_renamedFolder))
             continue  
 
         # If Zipped or Unzipped Folders are not present, download zip folders and unzip them
@@ -44,8 +44,8 @@ def download_lobster_data(url:str, directory:str, folderList:list) -> None:
             urlretrieve(_url, filename=folder)
             print("Unzipping Folder: ", folder)
             with ZipFile(_zippedFolderPath, 'r') as zip:
-                os.mkdir(_unzippedFolder)
-                zip.extractall(path=os.path.abspath(_unzippedFolder))
+                os.mkdir(_renamedFolder)
+                zip.extractall(path=os.path.abspath(_renamedFolder))
             # Delete Zipped Folder after Unzipping
             os.remove(_zippedFolderPath)
 
@@ -54,14 +54,14 @@ def download_lobster_data(url:str, directory:str, folderList:list) -> None:
             os.remove(_zippedFolderPath)
 
         # If Zipped Folders Exist, Unzip them
-        elif (os.path.exists(_zippedFolderPath) and (not os.path.exists(_unzippedFolder))):
+        elif (os.path.exists(_zippedFolderPath) and (not os.path.exists(_renamedFolder))):
             print("Zipped Folders present, Unzipping File: ", folder)
             with ZipFile(_zippedFolderPath) as zip:
-                os.mkdir(_unzippedFolder)
-                zip.extractall(path=os.path.abspath(_unzippedFolder))
+                os.mkdir(_renamedFolder)
+                zip.extractall(path=os.path.abspath(_renamedFolder))
             os.remove(_zippedFolderPath)
         else:
-            print("The Unzipped Folder {} already exists".format(_unzippedFolder))
+            print("The Unzipped Folder {} already exists".format(_renamedFolder))
 
     return None
 
