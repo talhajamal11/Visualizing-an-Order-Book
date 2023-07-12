@@ -1,8 +1,7 @@
 # ignore all DS_Store files
 *.DS_Store
-.venv/
-.venv/bin/
-/lib/
+.venv
+.vscode
 
 # Ignore the data directories with large files
 src/data/level_1_5_10
