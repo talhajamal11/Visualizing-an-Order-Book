@@ -8,3 +8,22 @@ import os
 import pandas as pd
 
 
+def readMessage(filePath:str) -> pd.DataFrame:
+    # Trading starts from 9:30am till 4pm
+    # The Time is recorded in seconds post midnight with milliseconds or nanoseconds accuracy 
+    _startOfTrading = 9.5*60*60
+    _endOfTrading = 16*60*60
+    _df = pd.read_csv(filePath,
+                      names=["Time", "Event Type", "Order ID", "Size", "Price", "Direction"])
+    
+    # Make sure trading data is between trading times 
+    _df = _df[_df["Time"] >= _startOfTrading]
+    _df = _df[_df["Time"] <= _endOfTrading]
+    
+    return _df
+
+path = "/Users/talhajamal/Documents/Coding Practice/Python Projects/Visualizing-an-Order-Book/src/data/lobster/AAPL_2012-06-21_1/AAPL_2012-06-21_34200000_57600000_message_1.csv"
+
+df = readMessage(path)
+print(df)
+
